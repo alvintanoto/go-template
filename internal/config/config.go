@@ -12,6 +12,12 @@ import (
 type Config struct {
 	AppEnv string `envconfig:"ENV" default:"DEVELOPMENT"`
 	Port   string `envconfig:"PORT" default:"8080"`
+
+	DbHost     string `envconfig:"DB_HOST" default:""`
+	DbPort     string `envconfig:"DB_PORT" default:""`
+	DbUser     string `envconfig:"DB_USER" default:""`
+	DbPassword string `envconfig:"DB_PASS" default:""`
+	DbName     string `envconfig:"DB_NAME" default:""`
 }
 
 func NewConfig() *Config {

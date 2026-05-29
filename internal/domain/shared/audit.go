@@ -7,6 +7,7 @@ type AuditData struct {
 	CreatedBy string
 	UpdatedAt time.Time
 	UpdatedBy string
+	DeletedAt *time.Time
 }
 
 func NewAuditData(Creator string) AuditData {
@@ -16,6 +17,7 @@ func NewAuditData(Creator string) AuditData {
 		CreatedBy: Creator,
 		UpdatedAt: now,
 		UpdatedBy: Creator,
+		DeletedAt: nil,
 	}
 }
 

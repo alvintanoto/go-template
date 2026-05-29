@@ -2,9 +2,15 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 
+	"alvintanoto.id/go-template/internal/adapters/handlers"
+	"alvintanoto.id/go-template/internal/adapters/postgres"
 	"alvintanoto.id/go-template/internal/config"
+	"github.com/go-chi/chi/v5"
 	"go.uber.org/dig"
+	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 func BuildContainer() *dig.Container {
@@ -13,14 +19,43 @@ func BuildContainer() *dig.Container {
 	// import config
 	c.Provide(config.NewConfig)
 
+	// initialize logger
+	c.Provide(func(cfg *config.Config) (*zap.Logger, error) {
+		if cfg.AppEnv == "production" {
+			return zap.NewProduction()
+		}
+		return zap.NewDevelopment()
+	})
+
+	// initialize db
+	c.Provide(postgres.NewGormDatabase)
+
+	// setup repository
+	c.Provide(postgres.NewUserRepository)
+
+	//routing
+	c.Provide(handlers.NewZapMiddleware)
+	c.Provide(handlers.NewRouter)
+
 	return c
 }
 
 func main() {
 	container := BuildContainer()
-	err := container.Invoke(func(cfg *config.Config) error {
-		fmt.Printf("%s App running in port :%s\n", cfg.AppEnv, cfg.Port)
-		return nil
+
+	err := container.Invoke(func(db *gorm.DB) {})
+
+	err = container.Invoke(func(cfg *config.Config, router *chi.Mux, logger *zap.Logger) error {
+		defer logger.Sync()
+
+		addr := fmt.Sprintf(":%s", cfg.Port)
+		server := &http.Server{
+			Addr:    addr,
+			Handler: router,
+		}
+
+		fmt.Printf("Server starting on %s in [%s] mode...\n", addr, cfg.AppEnv)
+		return server.ListenAndServe()
 	})
 
 	if err != nil {
