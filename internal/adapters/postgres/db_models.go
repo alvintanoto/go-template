@@ -51,7 +51,7 @@ func NewGormDatabase(cfg *config.Config, log *zap.Logger) (*gorm.DB, error) {
 		ConnPool: sqlDB,
 	})
 	if err != nil {
-		log.Error("connecting to database: ", zap.String("err", err.Error()))
+		log.Error("connecting to database: ", zap.Error(err))
 	}
 
 	return db, err

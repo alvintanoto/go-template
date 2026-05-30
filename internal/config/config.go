@@ -18,6 +18,11 @@ type Config struct {
 	DbUser     string `envconfig:"DB_USER" default:""`
 	DbPassword string `envconfig:"DB_PASS" default:""`
 	DbName     string `envconfig:"DB_NAME" default:""`
+
+	RedisHost     string `envconfig:"REDIS_HOST" default:"localhost"`
+	RedisPort     string `envconfig:"REDIS_PORT" default:"6379"`
+	RedisPassword string `envconfig:"REDIS_PASSWORD" default:""`
+	RedisDB       string `envconfig:"REDIS_DB" default:"1"`
 }
 
 func NewConfig() *Config {

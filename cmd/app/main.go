@@ -4,8 +4,11 @@ import (
 	"fmt"
 	"net/http"
 
+	"alvintanoto.id/go-template/internal/adapters/auth"
 	"alvintanoto.id/go-template/internal/adapters/handlers"
 	"alvintanoto.id/go-template/internal/adapters/postgres"
+	"alvintanoto.id/go-template/internal/adapters/redis"
+	"alvintanoto.id/go-template/internal/application"
 	"alvintanoto.id/go-template/internal/config"
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/dig"
@@ -30,11 +33,23 @@ func BuildContainer() *dig.Container {
 	// initialize db
 	c.Provide(postgres.NewGormDatabase)
 
+	// initialize redis
+	c.Provide(redis.NewRedisClient)
+
+	// setup hasher
+	c.Provide(auth.NewHasher)
+
+	// setup services
+	c.Provide(application.NewAuthService)
+
 	// setup repository
 	c.Provide(postgres.NewUserRepository)
 
+	// setup apps layer
+
 	//routing
 	c.Provide(handlers.NewZapMiddleware)
+	c.Provide(handlers.NewAuthHandler)
 	c.Provide(handlers.NewRouter)
 
 	return c

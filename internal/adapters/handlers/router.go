@@ -8,6 +8,7 @@ import (
 )
 
 func NewRouter(
+	authHandler *AuthHandler,
 	logger *ZapMiddleware,
 ) *chi.Mux {
 	r := chi.NewRouter()
@@ -20,5 +21,8 @@ func NewRouter(
 		w.Write([]byte("Hello World"))
 	})
 
+	r.Route("/api/v1", func(r chi.Router) {
+		r.Post("/auth/signup", authHandler.SignUp)
+	})
 	return r
 }
