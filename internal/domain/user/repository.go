@@ -7,7 +7,8 @@ import (
 )
 
 type Repository interface {
-	shared.CRUDRepository[User, int64]
+	shared.CRUDRepository[User, string]
 
 	ExistsByEmail(ctx context.Context, email string) (bool, error)
+	FindByEmail(ctx context.Context, email string) (*User, error)
 }

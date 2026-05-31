@@ -23,6 +23,7 @@ func NewRouter(
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Post("/auth/signup", authHandler.SignUp)
+		r.Post("/auth/login", authHandler.Login)
 	})
 	return r
 }

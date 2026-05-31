@@ -9,42 +9,39 @@ import (
 
 type UserRepository struct {
 	db *gorm.DB
+	*GormRepository[user.User, GormUser, string]
 }
 
 func NewUserRepository(db *gorm.DB) user.Repository {
 	return &UserRepository{
 		db: db,
+		GormRepository: &GormRepository[user.User, GormUser, string]{
+			DB:           db,
+			IDColumnName: "id",
+			ToGorm: func(u *user.User) *GormUser {
+				return &GormUser{ID: u.UserID, Email: u.Email, Password: u.Password}
+			},
+			ToDomain: func(m *GormUser) *user.User {
+				return &user.User{UserID: m.ID, Email: m.Email, Password: m.Password}
+			},
+		},
 	}
 }
 
-// Create implements user.Repository.
-func (u *UserRepository) Create(ctx context.Context, entity *user.User) error {
-	dbModel := GormUser{
-		ID:       entity.UserID,
-		Name:     "",
-		Email:    entity.Email,
-		Password: entity.Password,
-	}
-	return u.db.WithContext(ctx).Create(&dbModel).Error
-}
+// FindByEmail implements user.Repository.
+func (u *UserRepository) FindByEmail(ctx context.Context, email string) (*user.User, error) {
+	var dbUser GormUser
 
-// Delete implements user.Repository.
-func (u *UserRepository) Delete(ctx context.Context, id int64) error {
-	return u.db.WithContext(ctx).Delete(&user.User{}, id).Error
-}
+	err := u.db.WithContext(ctx).
+		Where("email = ?", email).
+		First(&dbUser).
+		Error
 
-// GetByID implements user.Repository.
-func (u *UserRepository) GetByID(ctx context.Context, id int64) (*user.User, error) {
-	var dest user.User
-	if err := u.db.WithContext(ctx).First(&dest, id).Error; err != nil {
+	if err != nil {
 		return nil, err
 	}
-	return &dest, nil
-}
 
-// Update implements user.Repository.
-func (u *UserRepository) Update(ctx context.Context, entity *user.User) error {
-	return u.db.WithContext(ctx).Save(entity).Error
+	return u.GormRepository.ToDomain(&dbUser), nil
 }
 
 // ExistsByEmail implements user.Repository.
